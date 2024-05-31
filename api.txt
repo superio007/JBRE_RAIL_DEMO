@@ -1,0 +1,75 @@
+{
+"packageId": 1666,
+"packageDepartureDate": "2024-05-30T18:00:00.480Z",
+"packageBookingDate": "2024-05-07T02:59:14.480Z",
+"packagePriceTypeId": 3,
+"bookingTypeId": 2,
+"employeeId": "yrz7m8i3",
+"cabins": [
+    {
+    "cabinId": 1,
+    "elementId": 23920,
+    "elementIdSole": 23920,
+    "pax": 1,
+    "occupancyType": 1,
+    "priceTypeId": 610
+  },
+  {
+    "cabinId": 2,
+    "elementId": 23920,
+    "elementIdSole": 23920,
+    "pax": 1,
+    "occupancyType": 1,
+    "priceTypeId": 610
+  }
+],
+"passengers": [
+  {
+    "cabinId": 1,
+    "isAdult": true,
+    "passengerNumberInRoom": 1,
+    "isLeadPassenger": true,
+    "firstName": "John",
+    "lastName": "Doe",
+    "title": "Mr",
+    "addressLine1": "123 Main St",
+    "addressLine2": "Apt 101",
+    "addressPostCode": "54321",
+    "addressCity": "Springfield",
+    "addressState": "AnyState",
+    "addressCountry": "USA",
+    "phoneNumber": "+1234567890",
+    "emailAddress": "johndoe@example.com",
+    "isVegeterian": true,
+    "isLactoseFree": false,
+    "isGlutenFree": true,
+    "isVegan": false,
+    "travellingWithInfantDetails": "",
+    "otherRequestsValue": "need wheelchair"
+  },
+  {
+    "cabinId": 2,
+    "isAdult": true,
+    "passengerNumberInRoom": 1,
+    "isLeadPassenger": false,
+    "firstName": "Kiran",
+    "lastName": "Dhoke",
+    "title": "Mr",
+    "addressLine1": "125 Main St",
+    "addressLine2": "Apt 105",
+    "addressPostCode": "56321",
+    "addressCity": "Springfield VC",
+    "addressState": "Califonia",
+    "addressCountry": "USA",
+    "phoneNumber": "+1234567890",
+    "emailAddress": "kd@example.com",
+    "isVegeterian": true,
+    "isLactoseFree": false,
+    "isGlutenFree": true,
+    "isVegan": false,
+    "travellingWithInfantDetails": "",
+    "otherRequestsValue": "need wheelchair"
+  }
+],
+"agentReference":"kiran"
+}

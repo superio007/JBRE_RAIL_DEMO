@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View - Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</head>
+<body>
+<?php
+    function getToken(){
+        $url = "https://jb-auth-uat.azurewebsites.net/Client";
+        $postData = array(
+            "claims" => array(
+                "userName" => "stuart@geelongtravel.com.au"
+            ),
+            "clientId" => "515909a2-c9a6-46ee-a923-6cb1170e3571",
+            "secret" => "oF7QWRUYYUmISudsRgixrg=="
+        );
+        
+        // Convert the data to JSON format
+        $postDataJson = json_encode($postData);
+        // Initialize curl
+        $ch = curl_init();
+        // Set curl options
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Content-Type: application/json" // Set the Content-Type header to JSON
+        ));
+        curl_setopt($ch, CURLOPT_POST, true); // Set the request method to POST
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postDataJson); // Set the request body data
+    
+        // Execute curl request
+        $response = curl_exec($ch);
+    
+        // Decode JSON response
+        $data = json_decode($response, true);
+    
+        // Check for curl errors
+        if ($response === false) {
+            die("Error: Curl request failed: " . curl_error($ch));
+        }
+        // Close curl
+        curl_close($ch);
+    
+        $token = $data['accessToken'];
+        return $token;
+    }
+    // Your authorization token
+    $token = getToken();
+    
+    // Check if token needs refreshing
+    if ($data === null) {
+        // Refresh token
+        $token = getToken();
+    }
+    
+    // API endpoint
+    $url = "https://jb-b2b-api-test.azurewebsites.net/api/search/agent/search-packages?package=GHROW";
+    
+    // Initialize curl
+    $ch = curl_init();
+    
+    // Set curl options
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "Authorization: Bearer $token"
+    ));
+    
+    // Execute curl request
+    $response = curl_exec($ch);
+    
+    // Check for curl errors
+    if ($response === false) {
+        die("Error: Curl request failed: " . curl_error($ch));
+    }
+    
+    // Close curl
+    curl_close($ch);
+    
+    // Decode JSON response
+    $data = json_decode($response, true);
+    
+    // Check if JSON decoding was successful
+    if ($data === null) {
+        // Output the actual response for debugging
+        echo "Error: Kindly check the authentication token";
+        exit;
+    }
+    
+    // $date = isset($_GET['dates']);
+    // Filter data based on search parameters
+    $filteredData = $data['packageResponses'];
+    $departures = $filteredData['departures'];
+    
+    if(isset($_GET['code']) && $_GET['code'] != '') {
+        $code = $_GET['code'];
+        // Filter the data based on the specified code
+        $filteredData = array_filter($filteredData, function($item) use ($code) {
+            // Compare the code of each item with the specified code
+            return $item['code'] === $code;
+        });
+    }
+    if(isset($_POST['dates']) && $_POST['dates'] != '') {
+        $dates = $_POST['dates'];
+        // Filter the data based on the specified code
+        $departures = array_filter($departures, function($item) use ($dates) {
+            // Compare the code of each item with the specified code
+            return $item['departureId'] === $dates;
+        });
+    }
+    ?>
+    <div>
+    <?php foreach($filteredData as $item): ?>
+    <div class="w-100 mb-2" id="div" style="background-image: url(<?php echo $item['alternativePackageImageUrl'] ?>);height: 250px;background-repeat: no-repeat;background-size: cover;background-position-y: center;">
+        <h1 class="d-flex justify-content-center align-items-center h-100 text-white"><?php echo $item['name'] ?></h1>
+    </div>
+    <div class="row mb-2" style="position:relative">
+        <div class="col-6">
+            <img style="width:-webkit-fill-available;" src="<?php echo $item['packageImageUrl'] ?>" alt="primary image" >
+            <p style="font-size: large;font-weight: bolder;background-color: greenyellow;position: absolute;top: 0;padding: 6px 25px;border-radius: 18px;">Package Id : <sapn class="text-white"><?php echo $item['packageId'] ?></sapn></p>
+        </div>
+        <div class="col-6">
+            <h1><?php echo $item['name'] ?></h1>
+            <p><?php echo $item['description'] ?></p>
+            <p>Duration : <?php echo $item['duration'] ?> days</p>
+        </div>
+    </div>
+    <div class="mb-2">
+        <h2>Departures</h2>
+        <form id="departureForm">
+            <table class="table table-hover">
+                <tr>
+                    <th class="text-center">Sr/no</th>
+                    <th class="text-center">Start date</th>
+                    <th class="text-center">Start destination</th>
+                    <th class="text-center">End date</th>
+                    <th class="text-center">End destination</th>
+                    <th class="text-center">Select dates</th>
+                </tr>
+                <?php $val = 1; foreach($item['departures'] as $departure): ?>
+                    <tr>
+                        <td class="text-center"><?php echo $val ?></td>
+                        <td class="text-center"><?php echo $departure['startDate'] ?></td>
+                        <td class="text-center"><?php echo $departure['startRegion'] ?></td>
+                        <td class="text-center"><?php echo $departure['endDate'] ?></td>
+                        <td class="text-center"><?php echo $departure['endRegion'] ?></td>
+                        <td class="text-center"><input type="radio" name="dates" value="<?php echo $departure['departureId'] ?>"  id="date_<?php echo $departure['departureId'] ?>"></td>
+                    </tr>
+                    <?php $val++;?>
+                <?php endforeach; ?>
+            </table>
+        </form>
+    </div>
+    <div class="mb-2">
+        <h2>Cabins</h2>
+        <form id="cabinForm">
+            <table class="table table-hover" id="cabinTable">
+                <tr>
+                        <th class="text-center">Sr/no</th>
+                        <th >Name</th>
+                        <th >Service types </th>
+                        <th class="text-center">Price</th>
+                        <th class="text-center">Rooms lefts</th>
+                        <th class="text-center">Book</th>
+                    </tr>
+                    <?php $val = 1; foreach($departures['cabins'] as $depart): ?>
+                        <tr>
+                            <td class="text-center"><?php echo $val ?></td>
+                            <td ><?php echo $depart['name'] ?></td>
+                            <td ><?php echo $depart['serviceType'] ?></td>
+                            <td class="text-center"><?php echo $depart['startingPrice'] ?></td>
+                            <td class="text-center"><?php echo $depart['roomsLeft'] ?></td>
+                            <td class="text-center"><a href="book.php?code=<?php echo $depart['elementId']; ?>&packageId=<?php echo $item['packageId']; ?>&occupancyId=<?php echo $depart['occupancyId']; ?>" class="btn btn-primary">Book now</a></td>
+                        </tr>
+                        <?php $val++;?>
+                    <?php endforeach; ?>
+            </table>
+        </form>
+    </div>
+    <?php endforeach; ?>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const departureForm = document.getElementById('departureForm');
+            const cabinForm = document.getElementById('cabinForm');
+
+            departureForm.addEventListener('change', function(event) {
+                const selectedDate = event.target.value;
+                fetchCabinData(selectedDate);
+            });
+
+            function fetchCabinData(selectedDate) {
+                // Make an AJAX request to fetch cabin data based on selected date
+                fetch('fetch_cabins.php?date=' + selectedDate)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateCabinTable(data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            function updateCabinTable(cabins) {
+                const cabinTable = document.getElementById('cabinTable');
+                // Clear existing cabin table rows
+                cabinTable.innerHTML = '';
+
+                // Add new rows based on fetched cabin data
+                cabins.forEach((cabin, index) => {
+                    const row = cabinTable.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    // Add other cells as needed
+                    cell1.textContent = index + 1;
+                    cell2.textContent = cabin.name;
+                    // Add other cell content as needed
+                });
+            }
+        });
+    </script>
+</body>
+</html>
